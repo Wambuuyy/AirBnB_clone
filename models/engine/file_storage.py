@@ -3,6 +3,7 @@
 import json
 import os
 
+
 class FileStorage:
     """This class manages storage in the Airbnb modes in json format"""
     __file_path = 'file.json'
@@ -40,7 +41,7 @@ class FileStorage:
                 }
         try:
             temp = {}
-            with open (FileStorage.__file_path, 'r') as f:
+            with open(FileStorage.__file_path, 'r') as f:
                 temp = json.load(f)
                 for key, val in temp.items():
                     self.all()[key] = classes[val['__class__']](**val)
