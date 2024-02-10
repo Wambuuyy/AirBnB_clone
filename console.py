@@ -11,9 +11,16 @@ it's not executed when imported but when called
 import cmd
 import json
 import models
-from models.base_model import BaseModel
 from models import storage
-import shlex # we are parsing command-line input that includes quoted strings
+from models.amenity import Amenity
+from models.base_model import BaseModel
+from models.city import City
+from models.place import Place
+from models.review import Review
+from models.state import State
+from models.user import User
+import shlex  # we are parsing command-line input that includes quoted strings
+
 
 class HBNBCommand(cmd.Cmd):
     """
@@ -22,7 +29,12 @@ class HBNBCommand(cmd.Cmd):
     prompt = "(hbnb) "
     valid_classes = {
             "BaseModel": BaseModel,
-            # Add more class mappings as needed
+            "User": User,
+            "Amenity": Amenity,
+            "State": State,
+            "Review": Review,
+            "Place": Place,
+            "City": City,
             }
 
     def do_quit(self, arg):
@@ -61,14 +73,15 @@ class HBNBCommand(cmd.Cmd):
         elif class_name not in self.valid_classes:
             print("** class doesn't exist **")
         else:
-            class_obj = self.valid_classes[class_name] # get the class object from the dictionary
-            new_instance = class_obj() # instantiate a new object of the specified class
-            storage.save() # save the new instance to the JSON file
+            class_obj = self.valid_classes[class_name]  # get class from dict
+            new_instance = class_obj()  # instantiate new obj of specified cls
+            storage.save()  # save the new instance to the JSON file
             print(new_instance.id)
 
     def do_show(self, arg):
         """
-        Shows the string representation of an instance based on the class name and id.
+        Shows the string representation of an
+        instance based on the class name and id.
         """
         commands = shlex.split(arg)
         class_name = commands[0]
@@ -83,7 +96,7 @@ class HBNBCommand(cmd.Cmd):
             instance_id = commands[1]
             key = "{}.{}".format(class_name, instance_id)
 
-            objects = storage.all() # get all instances from storage
+            objects = storage.all()  # get all instances from storage
             if key in objects:
                 print(objects[key])
             else:
@@ -91,7 +104,8 @@ class HBNBCommand(cmd.Cmd):
 
     def do_all(self, arg):
         """
-        prints all string representation of all instances based or not on class name
+        prints all string representation of all
+        instances based or not on class name
         """
         objects = storage.all()
         commands = shlex.split(arg)
