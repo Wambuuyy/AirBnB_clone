@@ -24,6 +24,40 @@ import re
 import shlex  # we are parsing command-line input that includes quoted strings
 
 
+def split_curly_braces(e_arg):
+    """
+    Splits the curly braces for the update method
+    """
+    curly_braces = re.search(r"\{(.*?)\}", e_arg)
+
+    if curly_braces:
+        id_with_comma = shlex.split(e_arg[:curly_braces.span()[0]])
+        id = [i.strip(",") for i in id_with_comma][0]
+
+        str_data = curly_braces.group(1)
+        try:
+            arg_dict = ast.literal_eval("{" + str_data + "}")
+        except Exception:
+            print("**  invalid dictionary format **")
+            return
+        return id, arg_dict
+    else:
+        commands = e_arg.split(",")
+        if commands:
+            try:
+                id = commands[0]
+            except Exception:
+                return "", ""
+            try:
+                attr_name = commands[1]
+            except Exception:
+                return id, ""
+            try:
+                attr_value = commands[2]
+            except Exception:
+                return id, attr_name
+            return f"{id}", f"{attr_name} {attr_value}"
+
 class HBNBCommand(cmd.Cmd):
     """
     HBNBCommand console class
@@ -204,6 +238,72 @@ class HBNBCommand(cmd.Cmd):
 
                 obj.save()
 
+    def do_count(self, arg):
+        """
+        Counts and retrieves the number of instances of a class
+        usage: <class name>.count()
+        """
+        objects = storage.all()
+
+        commands = shlex.split(arg)
+
+        if arg:
+            cls_nm = commands[0]
+
+        count = 0
+
+        if commands:
+            if cls_nm in self.valid_classes:
+                for obj in objects.values():
+                    if obj.__class__.__name__ == cls_nm:
+                        count += 1
+                    print(count)
+                else:
+                    print("** invalid class name **")
+            else:
+                print("** class name missing **")
+
+     def default(self, arg):
+        """
+        Default behavior for cmd module when input is invalid
+        """
+        arg_list = arg.split('.')
+
+        cls_nm = arg_list[0]  # incoming class name
+
+        command = arg_list[1].split('(')
+
+        cmd_met = command[0]  # incoming command method
+
+        e_arg = command[1].split(')')[0]  # extra arguments
+
+        method_dict = {
+                'all': self.do_all,
+                'show': self.do_show,
+                'destroy': self.do_destroy,
+                'update': self.do_update,
+                'count': self.do_count
+                }
+
+        if cmd_met in method_dict.keys():
+            if cmd_met != "update":
+                return method_dict[cmd_met]("{} {}".format(cls_nm, e_arg))
+            else:
+                if not cls_nm:
+                    print("** class name missing **")
+                    return
+                try:
+                    obj_id, arg_dict = split_curly_braces(e_arg)
+                except Exception:
+                    pass
+                try:
+                    call = method_dict[cmd_met]
+                    return call("{} {} {}".format(cls_nm, obj_id, arg_dict))
+                except Exception:
+                    pass
+        else:
+            print("*** Unknown syntax: {}".format(arg))
+            return False
 
 if __name__ == "__main__":
     HBNBCommand().cmdloop()
