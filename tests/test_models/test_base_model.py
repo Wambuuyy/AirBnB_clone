@@ -19,6 +19,12 @@ class testBaseModel(unittest.TestCase):
         current_updated_at = my_model.save()
         self.assertNotEqual(initial_updated_at, current_updated_at)
 
+    def test_created_at(self):
+        # Test created_at attribute
+        test_instance = BaseModel()
+        # Check if created_at is a datetime object
+        self.assertIsInstance(test_instance.created_at, datetime)
+
     def test_to_dict(self):
         my_model = BaseModel()
 
